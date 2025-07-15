@@ -10,9 +10,11 @@
   <form method="POST">
     <label for="route_id">Select a Route:</label>
     <select name="route_id" id="route_id" required>
-      <option value="" disabled selected>-- Choose a route --</option>
       {% for route in routes %}
-        <option value="{{ route.rt }}">{{ route.rt }} - {{ route.rtnm }}</option>
+        <option value="{{ route.rt }}"
+          {% if request.form.get("route_id") == route.rt %}selected{% endif %}>
+          {{ route.rt }} - {{ route.rtnm }}
+        </option>
       {% endfor %}
     </select>
     <button type="submit">Get Stops</button>
@@ -23,7 +25,7 @@
   {% endif %}
 
   {% if stops %}
-    <h2>Stops for Route</h2>
+    <h2>Stops for Route {{ request.form.get("route_id") }}</h2>
     <ul>
       {% for stop in stops %}
         <li>{{ stop.stpnm }} (ID: {{ stop.stpid }})</li>
