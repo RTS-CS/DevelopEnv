@@ -1,38 +1,35 @@
 import os
 import requests
-from flask import Flask, request, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-API_KEY = os.getenv("CLEVER_API_KEY", "your-default-api-key")
-BASE_URL = os.getenv("CLEVER_API_URL", "https://rtstransit.com/bustime/api/v3/getstops")
+API_KEY = os.getenv("CLEVER_API_KEY")
+GET_ROUTES_URL = "https://riderts.app/bustime/api/v3/getroutes"
+GET_STOPS_URL = "https://riderts.app/bustime/api/v3/getstops"
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    routes = []
     stops = []
-    route_id = ""
     error = None
 
+    # Step 1: Get route list
+    try:
+        route_res = requests.get(GET_ROUTES_URL, params={"key": API_KEY, "format": "json"})
+        routes = route_res.json().get("bustime-response", {}).get("routes", [])
+    except Exception as e:
+        error = f"Error loading routes: {e}"
+
+    # Step 2: If form submitted, get stops
     if request.method == "POST":
         route_id = request.form.get("route_id")
-        if route_id:
-            params = {
-                "key": API_KEY,
-                "rt": route_id,
-                "format": "json"
-            }
-            try:
-                response = requests.get(BASE_URL, params=params)
-                data = response.json()
+        try:
+            stop_res = requests.get(GET_STOPS_URL, params={"key": API_KEY, "rt": route_id, "format": "json"})
+            stops = stop_res.json().get("bustime-response", {}).get("stops", [])
+            if not stops:
+                error = stop_res.json().get("bustime-response", {}).get("error", [{"msg": "No stops found"}])[0]["msg"]
+        except Exception as e:
+            error = f"Error fetching stops: {e}"
 
-                if "stops" in data:
-                    stops = data["stops"]
-                else:
-                    error = data.get("error", [{"msg": "No stops found"}])[0]["msg"]
-            except Exception as e:
-                error = str(e)
-
-    return render_template("index.html", stops=stops, route_id=route_id, error=error)
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return render_template("index.html", routes=routes, stops=stops, error=error)
