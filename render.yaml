@@ -8,4 +8,4 @@ services:
       - key: CLEVER_API_KEY
         value: 7GqnDentpEHC9wjD7jeSvP7P6
       - key: CLEVER_API_URL
-        value: https://rtstransit.com/bustime/api/v3/getstops
+        value: https://riderts.app/bustime/api/v3/getstops
