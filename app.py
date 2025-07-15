@@ -1,54 +1,47 @@
 import os
+import json
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, send_file
 
 app = Flask(__name__)
 
-# Load API key and URLs from environment
-API_KEY = os.getenv("CLEVER_API_KEY")
+API_KEY = os.getenv("CLEVER_API_KEY", "7GqnDentpEHC9wjD7jeSvP7P6")
 GET_ROUTES_URL = "https://riderts.app/bustime/api/v3/getroutes"
-GET_STOPS_URL = "https://riderts.app/bustime/api/v3/getstops"
+GET_VEHICLES_URL = "https://riderts.app/bustime/api/v3/getvehicles"
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    routes = []
-    stops = []
-    error = None
+    data = collect_data()
+    return render_template("index.html", data=data)
 
-    # Load all routes
+@app.route("/download")
+def download_json():
+    return send_file("stops_by_route.json", as_attachment=True)
+
+def collect_data():
+    output = {}
     try:
         route_res = requests.get(GET_ROUTES_URL, params={"key": API_KEY, "format": "json"})
         routes = route_res.json().get("bustime-response", {}).get("routes", [])
     except Exception as e:
-        error = f"Error loading routes: {e}"
-        return render_template("index.html", routes=routes, stops=stops, error=error)
+        return {"error": f"Failed to fetch routes: {e}"}
 
-    # If user submitted the form
-    if request.method == "POST":
-        route_id = request.form.get("route_id")
-        print("🟢 Route selected:", route_id)
-
+    for route in routes:
+        rt_id = route["rt"]
         try:
-            params = {"key": API_KEY, "rt": route_id, "format": "json"}
-            print("🔐 Using API key:", API_KEY)
-            print("🔗 Calling GET_STOPS_URL:", GET_STOPS_URL)
-            print("📦 Params:", params)
+            vehicle_res = requests.get(GET_VEHICLES_URL, params={"key": API_KEY, "format": "json", "rt": rt_id})
+            vehicles = vehicle_res.json().get("bustime-response", {}).get("vehicle", [])
+            stops = {}
+            for v in vehicles:
+                stpid = v.get("stpid")
+                stpnm = v.get("stpnm")
+                if stpid and stpnm:
+                    stops[stpid] = stpnm
+            output[rt_id] = {"route_name": route["rtnm"], "stops": stops}
+        except:
+            continue
 
-            stop_res = requests.get(GET_STOPS_URL, params=params)
+    with open("stops_by_route.json", "w") as f:
+        json.dump(output, f, indent=2)
 
-            print("📡 Full request URL:", stop_res.url)
-            print("📨 API response:", stop_res.text)
-
-            stops = stop_res.json().get("bustime-response", {}).get("stops", [])
-            if not stops:
-                error = stop_res.json().get("bustime-response", {}).get("error", [{"msg": "No stops found"}])[0]["msg"]
-
-        except Exception as e:
-            error = f"Error fetching stops: {e}"
-
-    return render_template("index.html", routes=routes, stops=stops, error=error)
-
-# Optional health check endpoint
-@app.route("/healthz")
-def health_check():
-    return "OK", 200
+    return output
