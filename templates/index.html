@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clever Stops Finder</title>
+</head>
+<body>
+    <h1>Enter Route ID to Get Stop IDs</h1>
+    <form method="POST">
+        <input type="text" name="route_id" placeholder="e.g. 5" required>
+        <button type="submit">Get Stops</button>
+    </form>
+
+    {% if error %}
+        <p style="color:red;">Error: {{ error }}</p>
+    {% endif %}
+
+    {% if stops %}
+        <h2>Stops for Route {{ route_id }}:</h2>
+        <ul>
+            {% for stop in stops %}
+                <li>{{ stop.stpid }} - {{ stop.stpnm }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
