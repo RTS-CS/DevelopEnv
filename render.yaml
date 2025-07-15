@@ -1,8 +1,7 @@
 services:
   - type: web
-    name: clever-stops-app
+    name: rts-stop-collector
     env: python
-    buildCommand: ""
     startCommand: gunicorn app:app
     envVars:
       - key: CLEVER_API_KEY
