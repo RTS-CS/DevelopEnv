@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Clever Stops Finder</title>
+  <meta charset="UTF-8">
+  <title>RTS Bus Stops</title>
 </head>
 <body>
-    <h1>Enter Route ID to Get Stop IDs</h1>
-    <form method="POST">
-        <input type="text" name="route_id" placeholder="e.g. 5" required>
-        <button type="submit">Get Stops</button>
-    </form>
+  <h1>RTS Bus Stops by Route</h1>
 
-    {% if error %}
-        <p style="color:red;">Error: {{ error }}</p>
-    {% endif %}
+  <form method="POST">
+    <label for="route">Select a Route:</label>
+    <select name="route_id" id="route" required>
+      {% for route in routes %}
+        <option value="{{ route.rt }}">{{ route.rt }} - {{ route.rtnm }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Get Stops</button>
+  </form>
 
-    {% if stops %}
-        <h2>Stops for Route {{ route_id }}:</h2>
-        <ul>
-            {% for stop in stops %}
-                <li>{{ stop.stpid }} - {{ stop.stpnm }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+  {% if error %}
+    <p style="color: red;">Error: {{ error }}</p>
+  {% endif %}
+
+  {% if stops %}
+    <h2>Stops for Route</h2>
+    <ul>
+      {% for stop in stops %}
+        <li>{{ stop.stpnm }} (ID: {{ stop.stpid }})</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 </body>
 </html>
