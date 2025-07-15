@@ -1,36 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>RTS Bus Stops by Route</title>
+  <title>RTS Stop Collector</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1 { color: #333; }
+    pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+  </style>
 </head>
 <body>
-  <h1>RTS Bus Stops by Route</h1>
-
-  <form method="POST">
-    <label for="route_id">Select a Route:</label>
-    <select name="route_id" id="route_id" required>
-      {% for route in routes %}
-        <option value="{{ route.rt }}"
-          {% if request.form.get("route_id") == route.rt %}selected{% endif %}>
-          {{ route.rt }} - {{ route.rtnm }}
-        </option>
-      {% endfor %}
-    </select>
-    <button type="submit">Get Stops</button>
-  </form>
-
-  {% if error %}
-    <p style="color: red;">Error: {{ error }}</p>
-  {% endif %}
-
-  {% if stops %}
-    <h2>Stops for Route {{ request.form.get("route_id") }}</h2>
-    <ul>
-      {% for stop in stops %}
-        <li>{{ stop.stpnm }} (ID: {{ stop.stpid }})</li>
-      {% endfor %}
-    </ul>
+  <h1>Live Stop Collector by Route</h1>
+  <p><a href="/download">⬇ Download JSON file</a></p>
+  {% if data.error %}
+    <p style="color: red">{{ data.error }}</p>
+  {% else %}
+    {% for route_id, info in data.items() %}
+      <h3>Route {{ route_id }} - {{ info.route_name }}</h3>
+      <ul>
+        {% for stop_id, stop_name in info.stops.items() %}
+          <li><strong>{{ stop_id }}</strong>: {{ stop_name }}</li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
   {% endif %}
 </body>
 </html>
