@@ -14,18 +14,23 @@ def index():
     stops = []
     error = None
 
-    # Step 1: Get route list
+    # Get available routes from API
     try:
         route_res = requests.get(GET_ROUTES_URL, params={"key": API_KEY, "format": "json"})
         routes = route_res.json().get("bustime-response", {}).get("routes", [])
     except Exception as e:
         error = f"Error loading routes: {e}"
 
-    # Step 2: If form submitted, get stops
+    # Handle form submission to get stops
     if request.method == "POST":
         route_id = request.form.get("route_id")
+        print("🟢 Route selected:", route_id)
+
         try:
-            stop_res = requests.get(GET_STOPS_URL, params={"key": API_KEY, "rt": route_id, "format": "json"})
+            stop_res = requests.get(
+                GET_STOPS_URL,
+                params={"key": API_KEY, "rt": route_id, "format": "json"}
+            )
             stops = stop_res.json().get("bustime-response", {}).get("stops", [])
             if not stops:
                 error = stop_res.json().get("bustime-response", {}).get("error", [{"msg": "No stops found"}])[0]["msg"]
