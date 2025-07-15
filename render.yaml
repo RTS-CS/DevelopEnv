@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: clever-stops-app
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: CLEVER_API_KEY
+        value: your-api-key-here
+      - key: CLEVER_API_URL
+        value: https://rtstransit.com/bustime/api/v3/getstops
