@@ -10,7 +10,7 @@
   <form method="POST">
     <label for="route_id">Select a Route:</label>
     <select name="route_id" id="route_id" required>
-      <option value="" disabled selected>Select a route</option>
+      <option value="" disabled selected>-- Choose a route --</option>
       {% for route in routes %}
         <option value="{{ route.rt }}">{{ route.rt }} - {{ route.rtnm }}</option>
       {% endfor %}
@@ -23,7 +23,7 @@
   {% endif %}
 
   {% if stops %}
-    <h2>Stops for Selected Route</h2>
+    <h2>Stops for Route</h2>
     <ul>
       {% for stop in stops %}
         <li>{{ stop.stpnm }} (ID: {{ stop.stpid }})</li>
